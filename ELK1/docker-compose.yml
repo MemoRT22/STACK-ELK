@@ -1,0 +1,87 @@
+version: '3.2'
+services:
+  Elas1:
+    image: elasticsearch:7.8.0
+
+    environment:
+      - node.name=Elas1
+      - cluster.name=elastic_cluster
+      - discovery.seed_hosts=Elas2,Elas3
+      - cluster.initial_master_nodes=Elas1,Elas2,Elas3
+      - bootstrap.memory_lock=true
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+      - ./elas1/jvm.options:/usr/share/elasticsearch/config/jvm.options:rw
+    ports:
+      - 9700:9200
+    networks:
+      - ELK_BRDG
+  Elas2:
+    image: elasticsearch:7.8.0
+    environment:
+      - node.name=Elas2
+      - cluster.name=elastic_cluster
+      - discovery.seed_hosts=Elas1,Elas3
+      - cluster.initial_master_nodes=Elas1,Elas2,Elas3
+      - bootstrap.memory_lock=true
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es2_data:/usr/share/elasticsearch/data
+      - ./elas2/jvm.options:/usr/share/elasticsearch/config/jvm.options:rw
+    ports:
+      - 9702:9200
+    networks:
+      - ELK_BRDG
+  Elas3:
+    image: elasticsearch:7.8.0
+    environment:
+      - node.name=Elas3
+      - cluster.name=elastic_cluster
+      - discovery.seed_hosts=Elas1,Elas2
+      - cluster.initial_master_nodes=Elas1,Elas2,Elas3
+      - bootstrap.memory_lock=true
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es3_data:/usr/share/elasticsearch/data
+      - ./elas3/jvm.options:/usr/share/elasticsearch/config/jvm.options:rw
+    ports:
+      - 9703:9200
+    networks:
+      - ELK_BRDG 
+  Metricbeat1:
+    user: root
+    image: docker.elastic.co/beats/metricbeat:7.8.0
+
+    volumes:
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: metricbeat -e -strict.perms=false
+    restart: on-failure 
+volumes:
+  es_data:
+    driver: local
+  es2_data:
+    driver: local
+  es3_data:
+    driver: local
+networks:
+  ELK_BRDG:
+    driver: bridge
+
