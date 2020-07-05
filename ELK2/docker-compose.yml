@@ -1,0 +1,48 @@
+version: '3.0'
+
+services:
+
+  LogstashToMetric:
+    image: docker.elastic.co/logstash/logstash:7.8.0
+
+    volumes:
+      - ./logstash2/metric/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash2/metric/jvm.options:/usr/share/logstash/config/jvm.options"
+      - ./logstash2/data/logstash_metricbeat.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "9705:5044"
+
+  LogstashToFilebitB:
+    image: docker.elastic.co/logstash/logstash:7.8.0
+
+    volumes:
+      - ./logstash2/file/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash2/file/jvm.options:/usr/share/logstash/config/jvm.options"
+      - ./logstash2/data/logstash_filebeat.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "9704:5045"
+  Metricbeat2:
+    user: root
+    image: docker.elastic.co/beats/metricbeat:7.8.0
+
+    volumes:
+      - ./metricbeat2/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: metricbeat -e -strict.perms=false
+    restart: on-failure
+
+  filebeat:
+    user: root
+    depends_on:
+      - LogstashToFilebitB
+    image: docker.elastic.co/beats/filebeat:7.8.0
+
+    volumes:
+      - ./filebeat2/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./filebeat2/data:/usr/share/filebeat/data
+      - ./filebeat2/logstash-tutorial.log:/home/MemoRT2/ELK2/filebeat2/logstash-tutorial.log
+    command: ["-e", "--strict.perms=false"]
