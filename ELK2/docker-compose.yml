@@ -44,5 +44,5 @@ services:
     volumes:
       - ./filebeat2/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./filebeat2/data:/usr/share/filebeat/data
-      - ./filebeat2/logstash-tutorial.log:/home/MemoRT2/ELK2/filebeat2/logstash-tutorial.log
+      - ./filebeat2/apache_logs.log:/data/apache_logs.log
     command: ["-e", "--strict.perms=false"]
