@@ -1,6 +1,5 @@
 version: '3.2'
-services:
-#---------------------------------------------------------  
+services:  
   Kibana:
     image: kibana:7.8.0
 
@@ -9,8 +8,7 @@ services:
     environment:
       ELASTICSEARCH_URL: http://70.37.52.245:9700
       ELASTICSEARCH_HOSTS: http://70.37.52.245:9700
-
-#---------------------------------------------------------  
+  
   LogstasCSV:
     image: logstash:7.8.0
 
@@ -18,7 +16,7 @@ services:
       - 5450:5450
 
     volumes:
-      # Dentro de pipeline debe estar el logstash.conf
       - ./logstash/data/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./logstash/jvm.options:/usr/share/logstash/config/jvm.options
       - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - /home/MemoRT3/ELK3/logstash/data/olympic.csv:/data/olympic.csv:ro
